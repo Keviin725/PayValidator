@@ -1,6 +1,6 @@
 <template>
   <q-page class="flex flex-center">
-    <q-form @submit.prevent="processarImagem">
+    <q-form @submit="processarImagem">
       <q-uploader v-model="arquivos" label="Upload Talão de Depósito" @uploaded="processarImagem" />
       <q-btn type="submit" label="Validar Pagamento" />
       <q-banner v-if="resultado" type="positive">{{ resultado }}</q-banner>
@@ -27,7 +27,7 @@ defineOptions({
       formData.append('file', arquivos.value[0]);
 
       try {
-        const response = await axios.post('http://localhost:5000/extrair_dados', formData, {
+        const response = await axios.post('http://localhost:3000/extrair_dados', formData, {
           headers: {
             'Content-Type': 'multipart/form-data'
           }
