@@ -4,9 +4,14 @@
       <q-uploader
         v-model="arquivos"
         label="Upload Talão de Depósito"
-        @input="verificarArquivo"
-        @uploaded="uploadCompleto = true"
-        auto-upload="true"
+        url="http://localhost:3000/extrair_dados"
+        :headers="headers"
+        auto-upload
+        @added="onAdded"
+        @uploaded="onUploaded"
+        @uploading="onUploading"
+        @failed="onFailed"
+        @error="onError"
       />
       <q-btn @click="processarImagem" label="Validar Pagamento" />
       <q-banner v-if="resultado" type="positive">{{ resultado }}</q-banner>
@@ -14,7 +19,6 @@
     </q-form>
   </q-page>
 </template>
-
 
 <script setup>
 import { ref } from 'vue';
@@ -25,25 +29,45 @@ const resultado = ref('');
 const erro = ref('');
 const uploadCompleto = ref(false);
 
-const verificarArquivo = () => {
-  // Se o arquivo foi selecionado, marque uploadCompleto como true
-  if (arquivos.value.length > 0) {
-    uploadCompleto.value = true;
-  } else {
-    uploadCompleto.value = false;
-  }
+// Define headers diretamente como um objeto simples
+const headers = {
+  'Content-Type': 'multipart/form-data'
+};
+
+const onAdded = (files) => {
+  console.log('Arquivo adicionado:', files);
+  uploadCompleto.value = false; // Resetar o status de upload quando um novo arquivo é adicionado
+};
+
+const onUploading = (file) => {
+  console.log('Arquivo em upload:', file);
+};
+
+const onUploaded = (file) => {
+  console.log('Arquivo carregado com sucesso:', file);
+  uploadCompleto.value = true; // Definir uploadCompleto para true quando o upload for concluído
+};
+
+const onFailed = (file) => {
+  console.log('Falha no upload do arquivo:', file);
+  erro.value = 'Falha ao carregar o arquivo.';
+};
+
+const onError = (error) => {
+  console.log('Erro no upload:', error);
+  erro.value = 'Erro no upload.';
 };
 
 const processarImagem = async () => {
   erro.value = '';
   resultado.value = '';
 
-  // Verifica se o upload foi completado antes de prosseguir
   if (!uploadCompleto.value) {
     erro.value = 'Por favor, complete o upload do arquivo antes de validar.';
     return;
   }
 
+  // Assumindo que o `arquivos.value[0]` está corretamente preenchido
   const formData = new FormData();
   formData.append('file', arquivos.value[0]);
 
